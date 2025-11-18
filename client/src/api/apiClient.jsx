@@ -1,9 +1,11 @@
 // src/api/apiClient.js
 import axios from 'axios';
 
-// 1. Set the base URL for our API
+// If we are in production, use the env variable. If in dev, use localhost.
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 const apiClient = axios.create({
-  baseURL: 'http://localhost:5001/api', // Our backend server
+  baseURL: baseURL,
 });
 
 // 2. Add an Interceptor (this is powerful!)

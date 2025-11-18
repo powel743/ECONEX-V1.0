@@ -1,4 +1,3 @@
-// server/server.js
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -8,7 +7,7 @@ import { Server } from 'socket.io';
 import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import wasteRoutes from './routes/wasteRoutes.js';
-import { initializeSocket } from './socket/socketLogic.js'; // We will create this file
+import { initializeSocket } from './socket/socketLogic.js';
 import adminRoutes from './routes/adminRoutes.js';
 import buyerRoutes from './routes/buyerRoutes.js';
 import rewardsRoutes from './routes/rewardsRoutes.js';
@@ -17,51 +16,67 @@ import chatRoutes from './routes/chatRoutes.js';
 // Load env vars
 dotenv.config();
 
-// Connect to Database
-connectDB();
+const startServer = async () => {
+  try {
+    // 1. Connect to Database
+    await connectDB();
+    console.log('MongoDB successfully connected.');
 
-const app = express();
+    const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json()); // To accept JSON data in the body
+    // 2. Configure CORS (Crucial for Deployment)
+    // We allow '*' (all origins) so Vercel can connect easily.
+    app.use(cors({
+      origin: '*', 
+      credentials: true
+    }));
 
-// --- Pass 'io' to our routes ---
-// We can attach 'io' to the request object so controllers can access it
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
+    app.use(express.json()); // To accept JSON data in the body
 
-// API Routes
-app.use('/api/users', userRoutes);
-app.use('/api/waste', wasteRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/buyer', buyerRoutes);
-app.use('/api/rewards', rewardsRoutes);
-app.use('/api/chat', chatRoutes);
+    // --- NEW: Create HTTP server and Socket.io server ---
+    const httpServer = createServer(app);
+    
+    // 3. Configure Socket.io CORS
+    const io = new Server(httpServer, {
+      cors: {
+        origin: '*', // Allow all connections (Vercel, Localhost, etc.)
+        methods: ['GET', 'POST'],
+      },
+    });
 
-// Simple base route
-app.get('/', (req, res) => {
-  res.send('Econex API is running...');
-});
+    // Pass the 'io' instance to our socket logic file
+    initializeSocket(io);
 
-// --- NEW: Create HTTP server and Socket.io server ---
-const httpServer = createServer(app);
+    // --- Pass 'io' to our routes ---
+    app.use((req, res, next) => {
+      req.io = io;
+      next();
+    });
 
-// Configure Socket.io
-const io = new Server(httpServer, {
-  cors: {
-    origin: 'http://localhost:5173', // Allow our React app
-    methods: ['GET', 'POST'],
-  },
-});
+    // API Routes
+    app.use('/api/users', userRoutes);
+    app.use('/api/waste', wasteRoutes);
+    app.use('/api/admin', adminRoutes);
+    app.use('/api/buyer', buyerRoutes);
+    app.use('/api/rewards', rewardsRoutes);
+    app.use('/api/chat', chatRoutes);
 
-// Pass the 'io' instance to our socket logic file
-initializeSocket(io);
+    // Simple base route (Health Check for Render)
+    app.get('/', (req, res) => {
+      res.send('Econex API is running...');
+    });
 
-const PORT = process.env.PORT || 5001;
+    const PORT = process.env.PORT || 5001;
 
-httpServer.listen(PORT, () =>
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
-);
+    httpServer.listen(PORT, () =>
+      console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
+    );
+
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Start the app
+startServer();

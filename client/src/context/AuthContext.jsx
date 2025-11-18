@@ -4,8 +4,13 @@ import { io } from 'socket.io-client';
 // --- 1. IMPORT THE API FUNCTIONS ---
 import { getLogisticsChatInbox, getCollectorLogisticsInbox, getSalesChatInbox } from '../api/chatApi';
 
+// 1. CREATE THE SOCKET OUTSIDE
 let socket;
-const SOCKET_SERVER_URL = 'http://localhost:5001';
+
+// If VITE_API_URL is set (e.g. https://my-backend.onrender.com/api), 
+// we remove the "/api" part to get the base server URL for the socket.
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const SOCKET_SERVER_URL = API_URL.replace('/api', '');
 
 export const SocketContext = createContext();
 export const AuthContext = createContext();

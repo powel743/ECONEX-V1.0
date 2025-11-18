@@ -24,10 +24,15 @@ const startServer = async () => {
 
     const app = express();
 
-    // 2. Configure CORS (Crucial for Deployment)
-    // We allow '*' (all origins) so Vercel can connect easily.
+    // 2. Configure CORS (The Fix)
+    // You cannot use '*' with credentials: true. You must list the specific URLs.
+    const allowedOrigins = [
+      "http://localhost:5173",             // Local Development
+      "https://econex.vercel.app"          // Production Frontend (Vercel)
+    ];
+
     app.use(cors({
-      origin: '*', 
+      origin: allowedOrigins,
       credentials: true
     }));
 
@@ -39,8 +44,9 @@ const startServer = async () => {
     // 3. Configure Socket.io CORS
     const io = new Server(httpServer, {
       cors: {
-        origin: '*', // Allow all connections (Vercel, Localhost, etc.)
+        origin: allowedOrigins, // Use the same allowed origins list
         methods: ['GET', 'POST'],
+        credentials: true
       },
     });
 

@@ -95,6 +95,7 @@ Maps: react-leaflet & leaflet
 - The app will be running on http://localhost:5173.
 
 ## Project structure
+```bash
 econex/
 ├── client/
 │   ├── src/
@@ -109,17 +110,19 @@ econex/
 └── server/
     ├── config/
     │   └── db.js         # MongoDB connection
-    ├── controllers/    # Business logic for routes
-    ├── middleware/     # Auth (protect) and role (adminOnly) middleware
-    ├── models/         # Mongoose schemas (User, WasteRequest, Transaction, etc.)
-    ├── routes/         # API route definitions
+    ├── controllers/      # Business logic for routes
+    ├── middleware/       # Auth (protect) and role (adminOnly) middleware
+    ├── models/           # Mongoose schemas (User, WasteRequest, Transaction, etc.)
+    ├── routes/           # API route definitions
     ├── socket/
     │   └── socketLogic.js # All Socket.io logic
     ├── utils/
     │   └── calculatePoints.js
-    ├── .env            # Environment variables
+    ├── .env              # Environment variables
     ├── package.json
-    └── server.js       # Express + Socket.io server setup
+    └── server.js         # Express + Socket.io server setup
+```
+
 
 ## API Endpoints Overview
 ### /api/users
@@ -147,4 +150,5 @@ GET /offers: (User) Get all active discount offers.
 GET /my-vouchers: (User) Get all vouchers owned by the user.
 POST /redeem/:id: (User) Redeem points for an offer.
 
-</details>
+## Website live at
+### https://econex.vercel.app/
